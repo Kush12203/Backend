@@ -17,5 +17,5 @@ app.use("/api/user", authRouter);
 app.use(notFound);
 app.use(errorHandler);
 app.listen(PORT, () => {
-    console.log(`Server is running  at PORT ${PORT}`);
+    console.log(`Server is running  at POT ${PORT}`);
   });
