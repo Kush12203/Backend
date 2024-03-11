@@ -7,8 +7,10 @@ const jwt  = require("jsonwebtoken");
 
 const createUser = asyncHandler(async (req, res) => {
   const email = req.body.email; 
-  const findUser = await User.findOne({email:email});
- if (!findUser) {
+  const mobile = req.body.mobile;
+  const findUserEmail = await User.findOne({email:email});
+  const findUserMobile = await User.findOne({mobile:mobile});
+ if (!findUserEmail && !findUserMobile) {
     const newUser = User.create(req.body);
     res.json(newUser);
   } else {
