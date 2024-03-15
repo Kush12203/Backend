@@ -14,7 +14,7 @@ const { isAdmin, authMiddleware } = require("../middlewares/authMiddleware");
 const { uploadPhoto, productImgResize } = require("../middlewares/uploadImage");
 
 router.post("/", authMiddleware, isAdmin, createProduct);
-router.put("upload/:id",authMiddleware,isAdmin,uploadPhoto.array("images",10),productImgResize,uploadImages)
+router.put("/upload/:id", authMiddleware, isAdmin, uploadPhoto.array("images", 10), productImgResize, uploadImages);
 router.get("/:id", getaProduct);
 router.put("/wishlist", authMiddleware, addToWishlist);
 router.put("/rating", authMiddleware, rating);

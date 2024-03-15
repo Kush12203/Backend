@@ -26,33 +26,30 @@ const uploadPhoto = multer({
   limits: { fileSize: 1000000 },
 });
 
+
+
 const productImgResize = async (req, res, next) => {
   if (!req.files) return next();
   await Promise.all(
     req.files.map(async (file) => {
-      await sharp(file.path)
-        .resize(300, 300)
-        .toFormat("jpeg")
-        .jpeg({ quality: 90 })
-        .toFile(`public/images/products/${file.filename}`);
-      // fs.unlinkSync(`public/images/products/${file.filename}`);
+      const resizedFileName = file.filename.replace('.jpeg', '-resized.jpeg');
+      const resizedFilePath = path.join(__dirname, `../public/images/resized/${resizedFileName}`);
+      try {
+        await sharp(file.path)
+          .resize(300, 300)
+          .toFormat('jpeg')
+          .jpeg({ quality: 90 })
+          .toFile(resizedFilePath);
+        // Remove the original file if it exists
+        if (fs.existsSync(file.path)) {
+          fs.unlinkSync(file.path);
+        }
+      } catch (error) {
+        console.error("Error resizing image:", error);
+      }
     })
   );
   next();
 };
 
-const blogImgResize = async (req, res, next) => {
-  if (!req.files) return next();
-  await Promise.all(
-    req.files.map(async (file) => {
-      await sharp(file.path)
-        .resize(300, 300)
-        .toFormat("jpeg")
-        .jpeg({ quality: 90 })
-        .toFile(`public/images/blogs/${file.filename}`);
-      // fs.unlinkSync(`public/images/blogs/${file.filename}`);
-    })
-  );
-  next();
-};
-module.exports = { uploadPhoto, productImgResize, blogImgResize };
+module.exports = { uploadPhoto, productImgResize };
