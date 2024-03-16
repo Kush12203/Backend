@@ -1,17 +1,19 @@
 const User = require("../models/userModel");
+const Product = require("../models/productModel")
+const Cart = require("../models/cartModel")
 const asyncHandler = require("express-async-handler");
 const { generateToken } = require("../config/jwtToken");
 const validateMongoDbId = require("../utils/validateMongoDbId");
 const { generateRefreshToken } = require("../config/refreshtoken");
-const jwt  = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const sendEmail = require("./emailCtrl");
 
 const createUser = asyncHandler(async (req, res) => {
-  const email = req.body.email; 
+  const email = req.body.email;
   const mobile = req.body.mobile;
-  const findUserEmail = await User.findOne({email:email});
-  const findUserMobile = await User.findOne({mobile:mobile});
- if (!findUserEmail && !findUserMobile) {
+  const findUserEmail = await User.findOne({ email: email });
+  const findUserMobile = await User.findOne({ mobile: mobile });
+  if (!findUserEmail && !findUserMobile) {
     const newUser = User.create(req.body);
     res.json(newUser);
   } else {
@@ -21,7 +23,7 @@ const createUser = asyncHandler(async (req, res) => {
 
 const loginUserCtrl = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  
+
   const findUser = await User.findOne({ email });
   if (findUser && (await findUser.isPasswordMatched(password))) {
     const refreshToken = await generateRefreshToken(findUser?._id);
@@ -47,14 +49,14 @@ const loginUserCtrl = asyncHandler(async (req, res) => {
   } else {
     throw new Error("Invalid Credentials");
   }
-  
+
 });
 
 const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  
+
   const findAdmin = await User.findOne({ email });
-  if(findAdmin.role !==  'admin') throw new Error("Not Authorised")
+  if (findAdmin.role !== 'admin') throw new Error("Not Authorised")
   if (findAdmin && (await findAdmin.isPasswordMatched(password))) {
     const refreshToken = await generateRefreshToken(findAdmin?._id);
     const updateuser = await User.findByIdAndUpdate(
@@ -79,23 +81,23 @@ const loginAdmin = asyncHandler(async (req, res) => {
   } else {
     throw new Error("Invalid Credentials");
   }
-  
+
 });
 
-const handleRefreshToken = asyncHandler(async (req,res) => {
+const handleRefreshToken = asyncHandler(async (req, res) => {
   const cookie = req.cookies;
-  if(!cookie?.refreshToken) throw new Error("No refresh token in Cookies");
-  
+  if (!cookie?.refreshToken) throw new Error("No refresh token in Cookies");
+
   const refreshToken = cookie.refreshToken;
-  const user = await User.findOne({refreshToken});
-  if(!user) throw new Error("Refresh token not found in db");
-  
+  const user = await User.findOne({ refreshToken });
+  if (!user) throw new Error("Refresh token not found in db");
+
   jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
-    if(err || user.id !== decoded.id){
+    if (err || user.id !== decoded.id) {
       throw new Error("There is something wrong with the refresh token!")
     }
     const accessToken = generateToken(user?._id);
-    res.json({accessToken});
+    res.json({ accessToken });
   })
 })
 
@@ -111,7 +113,7 @@ const logout = asyncHandler(async (req, res) => {
     });
     return res.sendStatus(204); // forbidden
   }
-  await User.findOneAndUpdate({refreshToken}, {
+  await User.findOneAndUpdate({ refreshToken }, {
     refreshToken: "",
   });
   res.clearCookie("refreshToken", {
@@ -146,33 +148,33 @@ const getallUser = asyncHandler(async (req, res) => {
   try {
     const getUsers = await User.find();
     res.json(getUsers);
-  } catch(error){
+  } catch (error) {
     throw new Error(error);
   }
 })
 
 const getaUser = asyncHandler(async (req, res) => {
-  const {id} = req.params;
-  validateMongoDbId(id); 
-  try{
+  const { id } = req.params;
+  validateMongoDbId(id);
+  try {
     const getaUser = await User.findById(id);
     res.json({
       getaUser,
     })
-  } catch(error) {
+  } catch (error) {
     throw new Error(error);
   }
 })
 
 const deleteaUser = asyncHandler(async (req, res) => {
-  const {id} = req.params;
-  validateMongoDbId(id); 
-  try{
+  const { id } = req.params;
+  validateMongoDbId(id);
+  try {
     const deleteaUser = await User.findByIdAndDelete(id);
     res.json({
       deleteaUser,
     })
-  } catch(error) {
+  } catch (error) {
     throw new Error(error);
   }
 })
@@ -180,10 +182,10 @@ const deleteaUser = asyncHandler(async (req, res) => {
 
 const updatedUser = asyncHandler(async (req, res) => {
   const { _id } = req.user;
-  validateMongoDbId(_id); 
+  validateMongoDbId(_id);
   try {
     const updatedUser = await User.findByIdAndUpdate(
-      _id, 
+      _id,
       {
         firstname: req?.body?.firstname,
         lastname: req?.body?.lastname,
@@ -191,11 +193,11 @@ const updatedUser = asyncHandler(async (req, res) => {
         moble: req?.body?.mobile,
       },
       {
-      new:true,
+        new: true,
       }
     );
     res.json(updatedUser);
-  } catch (error){
+  } catch (error) {
     throw new Error(error);
   }
 });
@@ -203,8 +205,8 @@ const updatedUser = asyncHandler(async (req, res) => {
 
 const blockUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  validateMongoDbId(id); 
-  try{
+  validateMongoDbId(id);
+  try {
     const block = await User.findByIdAndUpdate(
       id,
       {
@@ -217,15 +219,15 @@ const blockUser = asyncHandler(async (req, res) => {
     res.json({
       message: "User Blocked",
     })
-  } catch(error){
+  } catch (error) {
     throw new Error(error);
   }
 });
 
 const unblockUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  validateMongoDbId(id); 
-  try{
+  validateMongoDbId(id);
+  try {
     const unblock = await User.findByIdAndUpdate(
       id,
       {
@@ -238,10 +240,10 @@ const unblockUser = asyncHandler(async (req, res) => {
     res.json({
       message: "User Unblocked",
     })
-  } catch(error){
+  } catch (error) {
     throw new Error(error);
   }
-}); 
+});
 
 const updatePassword = asyncHandler(async (req, res) => {
   const { _id } = req.user;
@@ -280,7 +282,7 @@ const forgotPasswordToken = asyncHandler(async (req, res) => {
 
 
 const getWishlist = asyncHandler(async (req, res) => {
-  const {_id} = req.user;
+  const { _id } = req.user;
   try {
     const findUser = await User.findById(_id).populate("wishlist");
     res.json(findUser);
@@ -288,6 +290,65 @@ const getWishlist = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 })
+
+const userCart = asyncHandler(async (req, res) => {
+  const { cart } = req.body;
+  const { _id } = req.user;
+  validateMongoDbId(_id);
+  try {
+    let products = [];
+    const user = await User.findById(_id);
+    // check if user already have product in cart
+    const alreadyExistCart = await Cart.findOne({ orderby: user._id });
+    if (alreadyExistCart) {
+      alreadyExistCart.remove();
+    }
+    for (let i = 0; i < cart.length; i++) {
+      let object = {};
+      object.product = cart[i]._id;
+      object.count = cart[i].count;
+      object.color = cart[i].color;
+      let getPrice = await Product.findById(cart[i]._id).select("price").exec();
+      object.price = getPrice.price;
+      products.push(object);
+    }
+    let cartTotal = 0;
+    for (let i = 0; i < products.length; i++) {
+      cartTotal = cartTotal + products[i].price * products[i].count;
+    }
+    let newCart = await new Cart({
+      products,
+      cartTotal,
+      orderby: user?._id,
+    }).save();
+    res.json(newCart);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const getUserCart = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  validateMongoDbId(_id);
+  try {
+    const cart = await Cart.findOne({ orderby: _id }).populate("products.product");
+    res.json(cart);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+const emptyCart = asyncHandler(async (req, res) => {
+  const { _id } = req.user;
+  validateMongoDbId(_id);
+  try {
+    const user = await User.findOne({ _id });
+    const cart = await Cart.findOneAndDelete({ orderby: user._id });
+    res.json(cart);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
 
 module.exports = {
   createUser,
@@ -305,5 +366,7 @@ module.exports = {
   loginAdmin,
   getWishlist,
   saveAddress,
+  userCart,
+  getUserCart,
+  emptyCart,
 };
-  
