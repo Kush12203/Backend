@@ -56,7 +56,7 @@ var orderSchema = new mongoose.Schema(
           required: true,
         },
         color:{
-          type: String,
+          type: mongoose.Schema.Types.ObjectId,
           ref: "Color",
           required: true,
         },
