@@ -15,7 +15,7 @@ const { isAdmin, authMiddleware } = require("../middlewares/authMiddleware");
 router.post("/", authMiddleware, isAdmin, createProduct);
 router.get("/:id", getaProduct);
 router.put("/wishlist", authMiddleware, addToWishlist);
-router.put("/compare", authMiddleware, compareProducts);
+router.put("/compare-product", authMiddleware, compareProducts);
 router.put("/rating", authMiddleware, rating);
 
 router.put("/:id", authMiddleware, isAdmin, updateProduct);
