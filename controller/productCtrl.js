@@ -2,6 +2,9 @@ const Product = require("../models/productModel");
 const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
+const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+const geocoder = mbxGeocoding({ accessToken: mapBoxToken });
 // const fs = require("fs");
 // const {
 //   cloudinaryUploadImg,
@@ -10,6 +13,10 @@ const slugify = require("slugify");
 const validateMongoDbId = require("../utils/validateMongoDbId");
 const { response } = require("express");
 const createProduct = asyncHandler(async (req, res) => {
+//   const geoData = await geocoder.forwardGeocode({
+//     query: req.body.campground.location,
+//     limit: 1
+// }).send()
   try {
     if (req.body.title) {
       req.body.slug = slugify(req.body.title);
